@@ -1,7 +1,9 @@
 
+from concurrent.futures import Future, ProcessPoolExecutor
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import List, Tuple
+from functools import partial
+from typing import Generator, List, Tuple
 from advent_of_code.utils.file_utils import process_file
 
 
@@ -16,48 +18,39 @@ class Position:
   row: int
   column: int
 
-
-def _get_route(obstacles: List[Position], current_position: Position, map_size: int) -> List[Position]:
-  def _move(obstacles: List[Position], current_position: Position, direction: Direction) -> Tuple[Position, Direction]:
-    match direction: 
-      case Direction.UP:
-        next_position = Position(current_position.row-1, current_position.column)
-        if next_position in obstacles:
-          next_position = Position(current_position.row, current_position.column+1)
-          print("Moving right:", next_position)
-          return (next_position, Direction.RIGHT)
-        print("Moving up:", next_position)
-        return (next_position, Direction.UP)
-      case Direction.RIGHT:
+def _move(obstacles: List[Position], current_position: Position, direction: Direction) -> Tuple[Position, Direction]:
+  match direction: 
+    case Direction.UP:
+      next_position = Position(current_position.row-1, current_position.column)
+      if next_position in obstacles:
         next_position = Position(current_position.row, current_position.column+1)
-        if next_position in obstacles:
-          next_position = Position(current_position.row+1, current_position.column)
-          print("Moving down:", next_position)
-          return (next_position, Direction.DOWN)
-        print("Moving right:", next_position)
         return (next_position, Direction.RIGHT)
-      case Direction.DOWN:
+      return (next_position, Direction.UP)
+    case Direction.RIGHT:
+      next_position = Position(current_position.row, current_position.column+1)
+      if next_position in obstacles:
         next_position = Position(current_position.row+1, current_position.column)
-        if next_position in obstacles:
-          next_position = Position(current_position.row, current_position.column-1)
-          print("Moving left:", next_position)
-          return (next_position, Direction.LEFT)
-        print("Moving down:", next_position)
         return (next_position, Direction.DOWN)
-      case Direction.LEFT:
+      return (next_position, Direction.RIGHT)
+    case Direction.DOWN:
+      next_position = Position(current_position.row+1, current_position.column)
+      if next_position in obstacles:
         next_position = Position(current_position.row, current_position.column-1)
-        if next_position in obstacles:
-          next_position = Position(current_position.row-1, current_position.column)
-          print("Moving up:", next_position)
-          return (next_position, Direction.UP)
-        print("Moving left:", next_position)
         return (next_position, Direction.LEFT)
-      case default:
-        raise ValueError("This direction is unknown:", default)
+      return (next_position, Direction.DOWN)
+    case Direction.LEFT:
+      next_position = Position(current_position.row, current_position.column-1)
+      if next_position in obstacles:
+        next_position = Position(current_position.row-1, current_position.column)
+        return (next_position, Direction.UP)
+      return (next_position, Direction.LEFT)
+    case default:
+      raise ValueError("This direction is unknown:", default)
 
+def _get_route(obstacles: List[Position], borders: List[Position], current_position: Position, map_size: int) -> List[Position]:
   direction = Direction.UP
   distinct_positions: List[Position] = [current_position]
-  while current_position.row not in [0, map_size] and current_position.column not in [0, map_size]:
+  while current_position not in borders:
     next_position, direction = _move(obstacles=obstacles, current_position=current_position, direction=direction)
     if next_position not in distinct_positions:
       distinct_positions.append(next_position)
@@ -65,8 +58,7 @@ def _get_route(obstacles: List[Position], current_position: Position, map_size: 
 
   return distinct_positions
 
-def get_distinct_positions(file_name: str) -> int:
-  map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
+def _parse_map(map: List[List[str]]) -> Tuple[List[Position], Position, List[Position]]:
   current_position: Position
   obstacles: List[Position] = []
   for row in range(len(map)):
@@ -77,10 +69,55 @@ def get_distinct_positions(file_name: str) -> int:
         obstacles.append(Position(row, column))
   
   assert len(map) == len(map[0])
+  map_size = len(map)
+  borders = [Position(row=row, column=0) for row in range(map_size)]
+  borders.extend([Position(row=row, column=map_size-1) for row in range(map_size)])
+  borders.extend([Position(row=0, column=column) for column in range(map_size)])
+  borders.extend([Position(row=map_size-1, column=column) for column in range(map_size)])
+  return (obstacles, current_position, borders)
 
-  distinct_positions: List[Position] = _get_route(obstacles=obstacles, current_position=current_position, map_size=len(map)-1)
 
+def get_distinct_positions(file_name: str) -> int:
+  map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
+  obstacles, current_position, borders = _parse_map(map=map)
+  distinct_positions: List[Position] = _get_route(obstacles=obstacles, borders=borders, current_position=current_position, map_size=len(map)-1)
   return len(distinct_positions)
+
+def generate_new_obstacles(obstacles: List[Position], possible_obstacles: List[Position]) -> Generator[List[Position], None, None]:
+  print("New possible obstacles are:", len(possible_obstacles))
+  for po in possible_obstacles:
+    obstacles_copy = obstacles.copy()
+    obstacles_copy.append(po)
+    yield obstacles_copy
+
+def _task(obstacles: List[Position], borders: List[Position], initial_position: Position, run: int) -> int:
+    print("Task number:", run)
+    direction = Direction.UP
+    current_position = initial_position
+    distinct_positions: List[Tuple[Position, Direction]] = [(current_position, direction)]
+    while current_position not in borders:
+      next_position, direction = _move(obstacles=obstacles, current_position=current_position, direction=direction)
+      if (next_position, direction) not in distinct_positions:
+        distinct_positions.append((next_position, direction))
+      else:
+        print("Found loop")
+        return 1
+      current_position = next_position
+    return 0
+
+def get_loops(file_name: str) -> int:
+  map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
+  obstacles, current_position, borders = _parse_map(map=map)
+  initial_position = current_position
+  possible_obstacles: List[Position] = _get_route(obstacles=obstacles, borders=borders, current_position=current_position, map_size=len(map)-1)
+  possible_obstacles.remove(initial_position)
+
+  tasks: List[Future[int]]
+  run: int = 0
+  with ProcessPoolExecutor() as executor:
+    tasks = [executor.submit(_task, new_obstacles, borders, initial_position, (run := run + 1)) for new_obstacles in generate_new_obstacles(obstacles=obstacles, possible_obstacles=possible_obstacles)]
+
+  return sum(task.result() for task in tasks)
 
 
 
@@ -89,6 +126,10 @@ def main() -> None:
 
   part_one = get_distinct_positions(file_name=file_name)
   print("Part one solution is:", part_one)
+
+  # Part two is not correct
+  # part_two = get_loops(file_name=file_name)
+  # print("Part two solution is:", part_two)
 
 if __name__ == "__main__":
   main()
