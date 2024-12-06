@@ -2,7 +2,6 @@
 from concurrent.futures import Future, ProcessPoolExecutor
 from dataclasses import dataclass
 from enum import StrEnum
-from functools import partial
 from typing import Generator, List, Tuple
 from advent_of_code.utils.file_utils import process_file
 
