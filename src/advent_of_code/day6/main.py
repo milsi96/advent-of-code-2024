@@ -22,32 +22,28 @@ def _move(obstacles: List[Position], current_position: Position, direction: Dire
   match direction: 
     case Direction.UP:
       next_position = Position(current_position.row-1, current_position.column)
-      if next_position in obstacles:
-        next_position = Position(current_position.row, current_position.column+1)
-        return (next_position, Direction.RIGHT)
+      while next_position in obstacles:
+        return _move(obstacles=obstacles, current_position=current_position, direction=Direction.RIGHT) 
       return (next_position, Direction.UP)
     case Direction.RIGHT:
       next_position = Position(current_position.row, current_position.column+1)
-      if next_position in obstacles:
-        next_position = Position(current_position.row+1, current_position.column)
-        return (next_position, Direction.DOWN)
+      while next_position in obstacles:
+        return _move(obstacles=obstacles, current_position=current_position, direction=Direction.DOWN) 
       return (next_position, Direction.RIGHT)
     case Direction.DOWN:
       next_position = Position(current_position.row+1, current_position.column)
-      if next_position in obstacles:
-        next_position = Position(current_position.row, current_position.column-1)
-        return (next_position, Direction.LEFT)
+      while next_position in obstacles:
+        return _move(obstacles=obstacles, current_position=current_position, direction=Direction.LEFT) 
       return (next_position, Direction.DOWN)
     case Direction.LEFT:
       next_position = Position(current_position.row, current_position.column-1)
-      if next_position in obstacles:
-        next_position = Position(current_position.row-1, current_position.column)
-        return (next_position, Direction.UP)
+      while next_position in obstacles:
+        return _move(obstacles=obstacles, current_position=current_position, direction=Direction.UP) 
       return (next_position, Direction.LEFT)
     case default:
       raise ValueError("This direction is unknown:", default)
 
-def _get_route(obstacles: List[Position], borders: List[Position], current_position: Position, map_size: int) -> List[Position]:
+def _get_route(obstacles: List[Position], borders: List[Position], current_position: Position) -> List[Position]:
   direction = Direction.UP
   distinct_positions: List[Position] = [current_position]
   while current_position not in borders:
@@ -80,7 +76,7 @@ def _parse_map(map: List[List[str]]) -> Tuple[List[Position], Position, List[Pos
 def get_distinct_positions(file_name: str) -> int:
   map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
   obstacles, current_position, borders = _parse_map(map=map)
-  distinct_positions: List[Position] = _get_route(obstacles=obstacles, borders=borders, current_position=current_position, map_size=len(map)-1)
+  distinct_positions: List[Position] = _get_route(obstacles=obstacles, borders=borders, current_position=current_position)
   return len(distinct_positions)
 
 def generate_new_obstacles(obstacles: List[Position], possible_obstacles: List[Position]) -> Generator[List[Position], None, None]:
@@ -109,7 +105,7 @@ def get_loops(file_name: str) -> int:
   map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
   obstacles, current_position, borders = _parse_map(map=map)
   initial_position = current_position
-  possible_obstacles: List[Position] = _get_route(obstacles=obstacles, borders=borders, current_position=current_position, map_size=len(map)-1)
+  possible_obstacles: List[Position] = _get_route(obstacles=obstacles, borders=borders, current_position=current_position)
   possible_obstacles.remove(initial_position)
 
   tasks: List[Future[int]]
@@ -127,9 +123,9 @@ def main() -> None:
   part_one = get_distinct_positions(file_name=file_name)
   print("Part one solution is:", part_one)
 
-  # Part two is not correct
-  # part_two = get_loops(file_name=file_name)
-  # print("Part two solution is:", part_two)
+  # Part two takes more than 20 minutes D:
+  part_two = get_loops(file_name=file_name)
+  print("Part two solution is:", part_two)
 
 if __name__ == "__main__":
   main()
