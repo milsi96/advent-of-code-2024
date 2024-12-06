@@ -16,19 +16,8 @@ class Position:
   row: int
   column: int
 
-def get_distinct_positions(file_name: str) -> int:
-  map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
-  current_position: Position
-  obstacles: List[Position] = []
-  for row in range(len(map)):
-    for column in range(len(map[row])):
-      if map[row][column] == "^":
-        current_position = Position(row, column)
-      elif map[row][column] == "#":
-        obstacles.append(Position(row, column))
-  
-  assert len(map) == len(map[0])
 
+def _get_route(obstacles: List[Position], current_position: Position, map_size: int) -> List[Position]:
   def _move(obstacles: List[Position], current_position: Position, direction: Direction) -> Tuple[Position, Direction]:
     match direction: 
       case Direction.UP:
@@ -68,11 +57,28 @@ def get_distinct_positions(file_name: str) -> int:
 
   direction = Direction.UP
   distinct_positions: List[Position] = [current_position]
-  while current_position.row not in [0, len(map)-1] and current_position.column not in [0, len(map)-1]:
+  while current_position.row not in [0, map_size] and current_position.column not in [0, map_size]:
     next_position, direction = _move(obstacles=obstacles, current_position=current_position, direction=direction)
     if next_position not in distinct_positions:
       distinct_positions.append(next_position)
     current_position = next_position
+
+  return distinct_positions
+
+def get_distinct_positions(file_name: str) -> int:
+  map: List[List[str]] = process_file(file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")])
+  current_position: Position
+  obstacles: List[Position] = []
+  for row in range(len(map)):
+    for column in range(len(map[row])):
+      if map[row][column] == "^":
+        current_position = Position(row, column)
+      elif map[row][column] == "#":
+        obstacles.append(Position(row, column))
+  
+  assert len(map) == len(map[0])
+
+  distinct_positions: List[Position] = _get_route(obstacles=obstacles, current_position=current_position, map_size=len(map)-1)
 
   return len(distinct_positions)
 
