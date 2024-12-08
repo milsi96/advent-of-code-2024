@@ -72,7 +72,8 @@ def get_all_antinodes(file_name: str) -> int:
         end = forward_point
 
   result = list(filter(lambda an: an.x >= 0 and an.y >= 0 and an.x < input_size and an.y < input_size, antinodes))
-  return len(set(result).union(set(map(lambda p: p[1], locations))))
+  mapped_result = set(result).union(set(map(lambda p: p[1], locations)))
+  return len(set(map(lambda point: (int(point.x), int(point.y)), mapped_result)))
 
 
 def main() -> None:
