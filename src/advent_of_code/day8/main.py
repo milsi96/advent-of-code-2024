@@ -1,18 +1,19 @@
+from itertools import combinations, groupby
+
 from shapely.geometry import Point
-from typing import List, Set, Tuple
-from itertools import groupby, combinations
+
 from advent_of_code.utils.file_utils import process_file
 
 
-def _get_offsets(p1: Point, p2: Point) -> Tuple[float, float]:
+def _get_offsets(p1: Point, p2: Point) -> tuple[float, float]:
     length = p1.distance(p2)
     dx, dy = p2.x - p1.x, p2.y - p1.y
     unit_dx, unit_dy = dx / length, dy / length
     return unit_dx * length, unit_dy * length
 
 
-def _get_locations(input: List[str]) -> List[Tuple[str, Point]]:
-    locations: List[Tuple[str, Point]] = []
+def _get_locations(input: list[str]) -> list[tuple[str, Point]]:
+    locations: list[tuple[str, Point]] = []
     for row in range(len(input)):
         for column in range(len(input[row])):
             if input[row][column] == ".":
@@ -22,7 +23,7 @@ def _get_locations(input: List[str]) -> List[Tuple[str, Point]]:
 
 
 def get_first_level_antinodes(file_name: str) -> int:
-    input: List[str] = process_file(
+    input: list[str] = process_file(
         file_name=file_name, process=lambda x: x.replace("\n", "")
     )
     input_size = len(input)
@@ -31,7 +32,7 @@ def get_first_level_antinodes(file_name: str) -> int:
         sorted(locations, key=lambda e: e[0]), lambda location: location[0]
     )
 
-    antinodes: Set[Point] = set()
+    antinodes: set[Point] = set()
     for _, value in locations_by_frequency:
         location_combinations = list(combinations(map(lambda e: e[1], value), 2))
         for p1, p2 in location_combinations:
@@ -52,7 +53,7 @@ def get_first_level_antinodes(file_name: str) -> int:
 
 
 def get_all_antinodes(file_name: str) -> int:
-    input: List[str] = process_file(
+    input: list[str] = process_file(
         file_name=file_name, process=lambda x: x.replace("\n", "")
     )
     input_size = len(input)
@@ -61,7 +62,7 @@ def get_all_antinodes(file_name: str) -> int:
         sorted(locations, key=lambda e: e[0]), lambda location: location[0]
     )
 
-    antinodes: Set[Point] = set()
+    antinodes: set[Point] = set()
     for _, points in locations_by_frequency:
         location_combinations = list(combinations(map(lambda e: e[1], points), 2))
         for p1, p2 in location_combinations:

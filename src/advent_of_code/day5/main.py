@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cmp_to_key, partial
-from typing import List, Tuple
+
 from advent_of_code.utils.file_utils import process_file
 
 
@@ -10,20 +10,20 @@ class Rule:
     after: int
 
 
-def _process_input(file_name: str) -> Tuple[List[Rule], List[List[int]]]:
-    input: List[str] = process_file(file_name=file_name, process=lambda x: x)
+def _process_input(file_name: str) -> tuple[list[Rule], list[list[int]]]:
+    input: list[str] = process_file(file_name=file_name, process=lambda x: x)
 
     def _process_rule(line: str) -> Rule:
         numbers = line.split("|")
         return Rule(before=int(numbers[0]), after=int(numbers[1]))
 
-    def _process_update(line: str) -> List[int]:
+    def _process_update(line: str) -> list[int]:
         return list(map(lambda update: int(update), line.split(",")))
 
-    rules: List[Rule] = list(
+    rules: list[Rule] = list(
         map(_process_rule, filter(lambda line: "|" in line, input))
     )
-    updates: List[List[int]] = list(
+    updates: list[list[int]] = list(
         map(_process_update, filter(lambda line: "," in line, input))
     )
     return rules, updates
@@ -31,16 +31,16 @@ def _process_input(file_name: str) -> Tuple[List[Rule], List[List[int]]]:
 
 def get_middle_page_sum(file_name: str) -> int:
     rules, updates = _process_input(file_name=file_name)
-    valid_updates: List[List[int]] = list(
+    valid_updates: list[list[int]] = list(
         filter(partial(_is_update_valid, rules), updates)
     )
     return sum(map(lambda update: update[int(len(update) / 2)], valid_updates))
 
 
-def _is_update_valid(rules: List[Rule], update: List[int]) -> bool:
+def _is_update_valid(rules: list[Rule], update: list[int]) -> bool:
     for i in range(len(update)):
         applicable_rules = list(filter(lambda rule: rule.after == update[i], rules))
-        before_numbers: List[int] = list(
+        before_numbers: list[int] = list(
             map(lambda rule: rule.before, applicable_rules)
         )
         if any(num in update[i + 1 :] for num in before_numbers):
@@ -51,7 +51,7 @@ def _is_update_valid(rules: List[Rule], update: List[int]) -> bool:
 def get_sum_invalid_updates(file_name: str) -> int:
     rules, updates = _process_input(file_name=file_name)
 
-    def _compare(rules: List[Rule], num1: int, num2: int) -> int:
+    def _compare(rules: list[Rule], num1: int, num2: int) -> int:
         applicable_rules = list(
             filter(
                 lambda rule: (num1 == rule.after and num2 == rule.before)

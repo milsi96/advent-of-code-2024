@@ -1,17 +1,17 @@
 from functools import reduce
-from typing import Dict, List, Set, Tuple, TypeAlias
+from typing import TypeAlias
 
 from advent_of_code.utils.file_utils import process_file
 
-Coordinate: TypeAlias = Tuple[int, int]
+Coordinate: TypeAlias = tuple[int, int]
 
 X = 0
 Y = 1
 
 
 def next_move(
-    input: Dict[Coordinate, int], current_point: Coordinate
-) -> Set[Coordinate]:
+    input: dict[Coordinate, int], current_point: Coordinate
+) -> set[Coordinate]:
     new_moves = {
         (current_point[X] - 1, current_point[Y]),
         (current_point[X] + 1, current_point[Y]),
@@ -30,16 +30,16 @@ def next_move(
 
 
 def _trigger_next_move(
-    input: Dict[Coordinate, int], path: List[Coordinate], next_move: Coordinate
-) -> List[Coordinate]:
+    input: dict[Coordinate, int], path: list[Coordinate], next_move: Coordinate
+) -> list[Coordinate]:
     new_path = path.copy()
     new_path.append(next_move)
     return get_trailheads(input=input, path=new_path)
 
 
 def get_trailheads(
-    input: Dict[Coordinate, int], path: List[Coordinate]
-) -> List[Coordinate]:
+    input: dict[Coordinate, int], path: list[Coordinate]
+) -> list[Coordinate]:
     current_point: Coordinate = path[-1]
     if input.get(current_point) == 9:
         return [current_point]
@@ -57,7 +57,7 @@ def get_trailheads(
     )
 
 
-def _reduce_list(a, b) -> List[Coordinate]:
+def _reduce_list(a, b) -> list[Coordinate]:
     a.extend(b)
     return a
 
@@ -66,12 +66,12 @@ def solve_part_one(file_name: str) -> int:
     lines = process_file(
         file_name=file_name, process=lambda line: line.replace("\n", "")
     )
-    input: Dict[Coordinate, int] = dict()
+    input: dict[Coordinate, int] = dict()
     for row in range(len(lines)):
         for column in range(len(lines[row])):
             input[(row, column)] = int(lines[row][column])
 
-    start_points: Set[Coordinate] = set(
+    start_points: set[Coordinate] = set(
         map(lambda entry: entry[0], filter(lambda entry: entry[1] == 0, input.items()))
     )
 
@@ -92,12 +92,12 @@ def solve_part_two(file_name: str) -> int:
     lines = process_file(
         file_name=file_name, process=lambda line: line.replace("\n", "")
     )
-    input: Dict[Coordinate, int] = dict()
+    input: dict[Coordinate, int] = dict()
     for row in range(len(lines)):
         for column in range(len(lines[row])):
             input[(row, column)] = int(lines[row][column])
 
-    start_points: Set[Coordinate] = set(
+    start_points: set[Coordinate] = set(
         map(lambda entry: entry[0], filter(lambda entry: entry[1] == 0, input.items()))
     )
 

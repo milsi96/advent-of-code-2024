@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, List, Tuple
+
 from advent_of_code.utils.file_utils import process_file
 
 
 @dataclass
 class Equation:
     result: float
-    numbers: List[int]
+    numbers: list[int]
 
 
 def _process_equations(input: str) -> Equation:
@@ -15,18 +16,18 @@ def _process_equations(input: str) -> Equation:
     return Equation(result=result, numbers=numbers)
 
 
-def get_valid_equations_sum(file_name: str) -> Tuple[int, int]:
-    equations: List[Equation] = process_file(
+def get_valid_equations_sum(file_name: str) -> tuple[int, int]:
+    equations: list[Equation] = process_file(
         file_name=file_name, process=_process_equations
     )
 
-    def sum_op(num, acc):
+    def sum_op(num: int, acc: int):
         return num + acc
 
-    def mul_op(num, acc):
+    def mul_op(num: int, acc: int):
         return num * acc
 
-    def comb_op(num, acc):
+    def comb_op(num: int, acc: int):
         return int(f"{acc}{num}")
 
     valid_equations = [
@@ -54,7 +55,7 @@ def get_valid_equations_sum(file_name: str) -> Tuple[int, int]:
 
 
 def _is_valid(
-    equation: Equation, acc: int, operators: List[Callable[[int, int], int]]
+    equation: Equation, acc: int, operators: list[Callable[[int, int], int]]
 ) -> bool:
     if equation.result < acc or (len(equation.numbers) == 0 and equation.result != acc):
         return False

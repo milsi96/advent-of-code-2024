@@ -1,5 +1,4 @@
 import numpy as np
-from typing import List
 
 from advent_of_code.utils.file_utils import process_file
 
@@ -8,22 +7,22 @@ def _reverse_line(line: str) -> str:
     return line[::-1]
 
 
-def _transpose_matrix(matrix: List[List[str]]) -> List[List[str]]:
+def _transpose_matrix(matrix: list[list[str]]) -> list[list[str]]:
     return np.array(matrix).transpose().tolist()
 
 
-def _get_diagonals(matrix: List[List[str]]) -> List[List[str]]:
+def _get_diagonals(matrix: list[list[str]]) -> list[list[str]]:
     return [
         np.array(matrix).diagonal(offset=offset).tolist()
         for offset in range(len(matrix), -len(matrix) - 1, -1)
     ]
 
 
-def _get_anti_diagonals(matrix: List[List[str]]) -> List[List[str]]:
+def _get_anti_diagonals(matrix: list[list[str]]) -> list[list[str]]:
     return _get_diagonals(np.fliplr(np.array(matrix)).tolist())
 
 
-def _get_occurrences(matrix: List[List[str]], word: str) -> int:
+def _get_occurrences(matrix: list[list[str]], word: str) -> int:
     return sum(
         [
             "".join(line).count(word) + _reverse_line(line="".join(line)).count(word)
@@ -33,7 +32,7 @@ def _get_occurrences(matrix: List[List[str]], word: str) -> int:
 
 
 def get_total_occurrences(file_name: str, word: str) -> int:
-    input: List[List[str]] = process_file(
+    input: list[list[str]] = process_file(
         file_name=file_name, process=lambda x: list(x.replace("\n", ""))
     )
     return (
@@ -45,7 +44,7 @@ def get_total_occurrences(file_name: str, word: str) -> int:
 
 
 def get_total_X(file_name: str, word: str) -> int:
-    matrix: List[List[str]] = process_file(
+    matrix: list[list[str]] = process_file(
         file_name=file_name, process=lambda x: list(x.replace("\n", ""))
     )
     result: int = 0

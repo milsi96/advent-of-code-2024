@@ -1,7 +1,8 @@
+from collections.abc import Generator
 from concurrent.futures import Future, ProcessPoolExecutor
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Generator, List, Tuple
+
 from advent_of_code.utils.file_utils import process_file
 
 
@@ -19,8 +20,8 @@ class Position:
 
 
 def _move(
-    obstacles: List[Position], current_position: Position, direction: Direction
-) -> Tuple[Position, Direction]:
+    obstacles: list[Position], current_position: Position, direction: Direction
+) -> tuple[Position, Direction]:
     match direction:
         case Direction.UP:
             next_position = Position(current_position.row - 1, current_position.column)
@@ -63,10 +64,10 @@ def _move(
 
 
 def _get_route(
-    obstacles: List[Position], borders: List[Position], current_position: Position
-) -> List[Position]:
+    obstacles: list[Position], borders: list[Position], current_position: Position
+) -> list[Position]:
     direction = Direction.UP
-    distinct_positions: List[Position] = [current_position]
+    distinct_positions: list[Position] = [current_position]
     while current_position not in borders:
         next_position, direction = _move(
             obstacles=obstacles, current_position=current_position, direction=direction
@@ -78,9 +79,9 @@ def _get_route(
     return distinct_positions
 
 
-def _parse_map(map: List[List[str]]) -> Tuple[List[Position], Position, List[Position]]:
+def _parse_map(map: list[list[str]]) -> tuple[list[Position], Position, list[Position]]:
     current_position: Position
-    obstacles: List[Position] = []
+    obstacles: list[Position] = []
     for row in range(len(map)):
         for column in range(len(map[row])):
             if map[row][column] == "^":
@@ -100,19 +101,19 @@ def _parse_map(map: List[List[str]]) -> Tuple[List[Position], Position, List[Pos
 
 
 def get_distinct_positions(file_name: str) -> int:
-    map: List[List[str]] = process_file(
+    map: list[list[str]] = process_file(
         file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")]
     )
     obstacles, current_position, borders = _parse_map(map=map)
-    distinct_positions: List[Position] = _get_route(
+    distinct_positions: list[Position] = _get_route(
         obstacles=obstacles, borders=borders, current_position=current_position
     )
     return len(distinct_positions)
 
 
 def generate_new_obstacles(
-    obstacles: List[Position], possible_obstacles: List[Position]
-) -> Generator[List[Position], None, None]:
+    obstacles: list[Position], possible_obstacles: list[Position]
+) -> Generator[list[Position], None, None]:
     print("New possible obstacles are:", len(possible_obstacles))
     for po in possible_obstacles:
         obstacles_copy = obstacles.copy()
@@ -121,15 +122,15 @@ def generate_new_obstacles(
 
 
 def _task(
-    obstacles: List[Position],
-    borders: List[Position],
+    obstacles: list[Position],
+    borders: list[Position],
     initial_position: Position,
     run: int,
 ) -> int:
     print("Task number:", run)
     direction = Direction.UP
     current_position = initial_position
-    distinct_positions: List[Tuple[Position, Direction]] = [
+    distinct_positions: list[tuple[Position, Direction]] = [
         (current_position, direction)
     ]
     while current_position not in borders:
@@ -146,17 +147,17 @@ def _task(
 
 
 def get_loops(file_name: str) -> int:
-    map: List[List[str]] = process_file(
+    map: list[list[str]] = process_file(
         file_name=file_name, process=lambda x: [c for c in x.replace("\n", "")]
     )
     obstacles, current_position, borders = _parse_map(map=map)
     initial_position = current_position
-    possible_obstacles: List[Position] = _get_route(
+    possible_obstacles: list[Position] = _get_route(
         obstacles=obstacles, borders=borders, current_position=current_position
     )
     possible_obstacles.remove(initial_position)
 
-    tasks: List[Future[int]]
+    tasks: list[Future[int]]
     run: int = 0
     with ProcessPoolExecutor() as executor:
         tasks = [

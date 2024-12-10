@@ -1,17 +1,17 @@
-from typing import Callable, List
+from collections.abc import Callable
 
 from advent_of_code.utils.file_utils import process_file
 
 
-def _get_input(file_name: str, process: Callable[[str], List[int]]) -> List[List[int]]:
+def _get_input(file_name: str, process: Callable[[str], list[int]]) -> list[list[int]]:
     return process_file(file_name=file_name, process=process)
 
 
-def _process_into_report(line: str) -> List[int]:
+def _process_into_report(line: str) -> list[int]:
     return [int(n) for n in line.split(" ")]
 
 
-def _is_report_valid(report: List[int]) -> bool:
+def _is_report_valid(report: list[int]) -> bool:
     valid_increasing = all(
         1 <= report[i] - report[i - 1] <= 3 for i in range(1, len(report))
     )
@@ -22,14 +22,14 @@ def _is_report_valid(report: List[int]) -> bool:
 
 
 def get_safe_reports(file_name: str) -> int:
-    reports: List[List[int]] = _get_input(
+    reports: list[list[int]] = _get_input(
         file_name=file_name, process=_process_into_report
     )
     return sum([_is_report_valid(report) for report in reports])
 
 
 def get_tolerated_safe_reports(file_name: str) -> int:
-    reports: List[List[int]] = _get_input(
+    reports: list[list[int]] = _get_input(
         file_name=file_name, process=_process_into_report
     )
     result = [
@@ -42,8 +42,8 @@ def get_tolerated_safe_reports(file_name: str) -> int:
     return sum(result)
 
 
-def _get_bad_level_options(report: List[int]) -> List[List[int]]:
-    result: List[List[int]] = []
+def _get_bad_level_options(report: list[int]) -> list[list[int]]:
+    result: list[list[int]] = []
     for i in range(len(report)):
         option = report.copy()
         option.pop(i)

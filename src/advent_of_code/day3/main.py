@@ -1,5 +1,5 @@
 import re
-from typing import Callable, List
+from collections.abc import Callable
 
 from advent_of_code.utils.file_utils import process_file
 
@@ -23,7 +23,7 @@ def get_mul_sum_donts(file_name: str) -> int:
 
 
 def _get_multiplications(
-    file_name: str, process_input: Callable[[List[str]], str]
+    file_name: str, process_input: Callable[[list[str]], str]
 ) -> int:
     input: str = process_input(process_file(file_name=file_name, process=lambda x: x))
     multiplications = re.findall(r"mul\(\d+,\d+\)", input)

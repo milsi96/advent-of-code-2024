@@ -1,6 +1,6 @@
 import pytest
 
-from advent_of_code.day4.main import get_total_X, get_total_occurrences
+from advent_of_code.day4.main import get_total_occurrences, get_total_X
 
 
 @pytest.mark.parametrize(

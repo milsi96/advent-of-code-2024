@@ -1,4 +1,5 @@
 import pytest
+
 from advent_of_code.day8.main import get_all_antinodes, get_first_level_antinodes
 
 

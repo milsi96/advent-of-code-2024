@@ -1,6 +1,6 @@
 import pytest
 
-from advent_of_code.day5.main import get_sum_invalid_updates, get_middle_page_sum
+from advent_of_code.day5.main import get_middle_page_sum, get_sum_invalid_updates
 
 
 @pytest.mark.parametrize("file_name, expected", [("input/day5/example.txt", 143)])

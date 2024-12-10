@@ -1,15 +1,14 @@
-from typing import Dict, List, Set, Tuple
 from advent_of_code.utils.file_utils import process_file
 
 dot = "."
 
 
-def parse_file_system(file_name: str) -> Tuple[Dict[str, List[int]], List[str]]:
-    input: List[int] = process_file(
+def parse_file_system(file_name: str) -> tuple[dict[str, list[int]], list[str]]:
+    input: list[int] = process_file(
         file_name=file_name, process=lambda x: list(map(int, x.replace("\n", "")))
     )[0]
     current_file_number: int = 0
-    acc: List[str] = []
+    acc: list[str] = []
     for i in range(len(input)):
         if i % 2 == 0:
             for _ in range(input[i]):
@@ -19,7 +18,7 @@ def parse_file_system(file_name: str) -> Tuple[Dict[str, List[int]], List[str]]:
             for _ in range(input[i]):
                 acc.append(dot)
 
-    filesystem: Dict[str, List[int]] = {}
+    filesystem: dict[str, list[int]] = {}
     for i in range(len(acc)):
         current_indexes = filesystem.get(acc[i], [])
         current_indexes.append(i)
@@ -28,7 +27,7 @@ def parse_file_system(file_name: str) -> Tuple[Dict[str, List[int]], List[str]]:
     return filesystem, list(filter(lambda ch: ch != dot, acc))
 
 
-def get_checksum(filesystem: Dict[str, List[int]]) -> int:
+def get_checksum(filesystem: dict[str, list[int]]) -> int:
     return sum(
         sum(int(file) * index for index in indexes)
         for file, indexes in filesystem.items()
@@ -51,9 +50,9 @@ def remove_empty_spaces(file_name: str) -> int:
     return get_checksum(filesystem=filesystem)
 
 
-def get_empty_chunks(empty_indexes: List[int]) -> List[List[int]]:
-    chunk: List[int] = []
-    result: List[List[int]] = []
+def get_empty_chunks(empty_indexes: list[int]) -> list[list[int]]:
+    chunk: list[int] = []
+    result: list[list[int]] = []
     for i in range(len(empty_indexes) - 1):
         chunk.append(empty_indexes[i])
         if empty_indexes[i + 1] - empty_indexes[i] > 1:
@@ -65,7 +64,7 @@ def get_empty_chunks(empty_indexes: List[int]) -> List[List[int]]:
 def move_files(file_name: str) -> int:
     filesystem, _ = parse_file_system(file_name=file_name)
     empty_chunks = get_empty_chunks(empty_indexes=filesystem[dot])
-    already_moved: Set[str] = set()
+    already_moved: set[str] = set()
 
     while True:
         empty_chunk = empty_chunks[0]

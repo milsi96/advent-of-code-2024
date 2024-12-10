@@ -41,6 +41,7 @@ dependencies = [
   "numpy",
   "shapely",
   "pre-commit",
+  "types-shapely",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
