@@ -19,7 +19,7 @@ def next_move(input: Dict[Coordinate, int], current_point: Coordinate) -> Set[Co
   result = set(filter(lambda move: move in input.keys() and input[move] - input[current_point] == 1, new_moves))
   return result
 
-def _trigger_next_run(input: Dict[Coordinate, int], path: List[Coordinate], next_move: Coordinate) -> Set[Coordinate]:
+def _trigger_next_move(input: Dict[Coordinate, int], path: List[Coordinate], next_move: Coordinate) -> Set[Coordinate]:
     new_path = path.copy()
     new_path.append(next_move)
     return get_trailheads(input=input, path=new_path)
@@ -33,7 +33,7 @@ def get_trailheads(input: Dict[Coordinate, int], path: List[Coordinate]) -> Set[
   if len(next_moves) == 0:
     return set()
 
-  return reduce(lambda a, b: a.union(b), [_trigger_next_run(input=input, path=path, next_move=move) for move in next_moves])
+  return reduce(lambda a, b: a.union(b), [_trigger_next_move(input=input, path=path, next_move=move) for move in next_moves])
 
 
 def solve_part_one(file_name: str) -> int:
@@ -46,7 +46,7 @@ def solve_part_one(file_name: str) -> int:
   start_points: Set[Coordinate] = set(map(lambda entry: entry[0], filter(lambda entry: entry[1] == 0, input.items())))
 
   result = {
-    start: reduce(lambda a, b: a.union(b), [_trigger_next_run(input=input, path=[], next_move=start)])
+    start: reduce(lambda a, b: a.union(b), [_trigger_next_move(input=input, path=[], next_move=start)])
     for start in start_points
   }
   
