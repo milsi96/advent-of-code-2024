@@ -126,7 +126,6 @@ def move_files(file_name: str) -> int:
             filter(lambda chunk: abs(chunk["dimension"]) >= file_length, empty_chunks),
             key=lambda chunk: chunk["index"],
         )
-        print(file)
         if len(next_spots) == 0:
             continue
         free_spot = next_spots[0]
