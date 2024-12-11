@@ -6,12 +6,12 @@ from advent_of_code.utils.file_utils import process_file
 
 @dataclass
 class Equation:
-    result: float
+    result: int
     numbers: list[int]
 
 
 def _process_equations(input: str) -> Equation:
-    result = float(input.split(":")[0])
+    result = int(input.split(":")[0])
     numbers = list(map(int, input.replace("\n", "").split(":")[1].strip().split(" ")))
     return Equation(result=result, numbers=numbers)
 

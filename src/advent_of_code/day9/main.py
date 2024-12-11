@@ -115,23 +115,27 @@ def get_empty_chunks(empty_indexes: List[int]) -> List[List[int]]:
 
 def move_files(file_name: str) -> int:
     filesystem, file_lengths = compact_parse(file_name=file_name)
+    index_key = "index"
+    dimension_key = "dimension"
 
     for file, file_length in sorted(file_lengths.items(), reverse=True):
         empty_chunks = [
-            {"index": index, "dimension": empty_chunk_dimension}
+            {index_key: index, dimension_key: empty_chunk_dimension}
             for index, empty_chunk_dimension in enumerate(filesystem)
             if empty_chunk_dimension < 0
         ]
         next_spots = sorted(
-            filter(lambda chunk: abs(chunk["dimension"]) >= file_length, empty_chunks),
-            key=lambda chunk: chunk["index"],
+            filter(
+                lambda chunk: abs(chunk[dimension_key]) >= file_length, empty_chunks
+            ),
+            key=lambda chunk: chunk[index_key],
         )
         if len(next_spots) == 0:
             continue
         free_spot = next_spots[0]
         free_spot_index, free_spot_dimension = (
-            free_spot["index"],
-            free_spot["dimension"],
+            free_spot[index_key],
+            free_spot[dimension_key],
         )
         if free_spot_index > filesystem.index(file):
             continue
@@ -153,12 +157,11 @@ def move_files(file_name: str) -> int:
 def main() -> None:
     file_name: str = "input/day9/input.txt"
 
-    # part_one = fill_empty_spaces(file_name=file_name)
-    # print("Part one solution is:", part_one)
+    part_one = fill_empty_spaces(file_name=file_name)
+    print("Part one solution is:", part_one)
 
     part_two = move_files(file_name=file_name)
     print("Part two solution is:", part_two)
-    # 6636608781232
 
 
 if __name__ == "__main__":
