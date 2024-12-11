@@ -1,6 +1,9 @@
 import pytest
 
-from advent_of_code.day9.main import move_files, fill_empty_spaces
+from advent_of_code.day9.main import (
+    fill_empty_spaces,
+    move_files,
+)
 
 
 @pytest.mark.parametrize("file_name, expected", [("input/day9/example.txt", 1928)])

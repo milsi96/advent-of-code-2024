@@ -1,62 +1,103 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from advent_of_code.utils.file_utils import process_file
+from itertools import repeat
 
-dot = -1
+empty = -1
 
 
-def parse_file_system(file_name: str) -> Dict[int, List[int]]:
+def parse_file_system(file_name: str) -> List[int]:
     input: list[int] = process_file(
         file_name=file_name, process=lambda x: list(map(int, x.replace("\n", "")))
     )[0]
-    current_file_number: int = 0
-    current_index: int = -1
-    filesystem: dict[int, list[int]] = {}
+    current_file_number: int = -1
+    filesystem: List[int] = []
 
     for i in range(len(input)):
-        new_indexes = [(current_index := current_index + 1) for _ in range(input[i])]
         if i % 2 == 0:
-            filesystem[current_file_number] = new_indexes
-            current_file_number += 1
+            filesystem.extend(
+                list(repeat((current_file_number := current_file_number + 1), input[i]))
+            )
         else:
-            free_space = filesystem.get(dot, [])
-            free_space.extend(new_indexes)
-            filesystem[dot] = free_space
+            filesystem.extend(list(repeat(empty, input[i])))
 
     return filesystem
 
 
-def get_checksum(filesystem: Dict[int, List[int]]) -> int:
+def compact_parse(file_name: str) -> Tuple[List[int], Dict[int, int]]:
+    input: list[int] = process_file(
+        file_name=file_name, process=lambda x: list(map(int, x.replace("\n", "")))
+    )[0]
+
+    current_file_number: int = -1
+    filesystem: List[int] = []
+    file_lengths: Dict[int, int] = dict()
+
+    for i in range(len(input)):
+        if i % 2 == 0:
+            filesystem.append((current_file_number := current_file_number + 1))
+            file_lengths[current_file_number] = input[i]
+        else:
+            if input[i] != 0:
+                filesystem.append(empty * input[i])
+
+    return filesystem, file_lengths
+
+
+def print_filesystem(filesystem: List[int]) -> None:
+    print("".join(list(map(str, filesystem))).replace("-1", "."))
+
+
+def print_compact_filesystem(
+    filesystem: List[int], file_lengths: Dict[int, int]
+) -> None:
+    acc: str = ""
+    for file in filesystem:
+        if file < 0:
+            acc += "." * abs(file)
+        else:
+            acc += str(file) * file_lengths[file]
+    print(acc)
+
+
+def get_checksum_compact(filesystem: List[int], file_lengths: Dict[int, int]) -> int:
+    result = 0
+    current_index = -1
+    for file in filesystem:
+        if file >= 0:
+            result += sum(
+                (current_index := current_index + 1) * file
+                for _ in range(file_lengths[file])
+            )
+        else:
+            current_index += abs(file)
+    return result
+
+
+def get_checksum(filesystem: List[int]) -> int:
     return sum(
-        sum(file * index for index in indexes)
-        for file, indexes in filesystem.items()
-        if file != dot
+        i * filesystem[i] for i in range(len(filesystem)) if filesystem[i] is not empty
     )
 
 
-def get_non_empty_spaces(filesystem: Dict[int, List[int]]) -> List[int]:
-    return [
-        index
-        for file in [
-            [key for _ in range(len(value))]
-            for key, value in sorted(filesystem.items())
-            if key != dot
-        ]
-        for index in file
-    ]
-
-
 def fill_empty_spaces(file_name: str) -> int:
-    filesystem = parse_file_system(file_name=file_name)
-    non_empty_spaces = get_non_empty_spaces(filesystem=filesystem)
+    filesystem: List[int] = parse_file_system(file_name=file_name)
+    non_empty_filesystem = [file for file in filesystem if file is not empty]
 
-    for empty_space in sorted(filesystem[dot]):
-        last_non_empty_item = non_empty_spaces.pop(-1)
-        last_non_empty_space = max(filesystem[last_non_empty_item])
-        if empty_space >= last_non_empty_space:
+    for file in filesystem:
+        if file is not empty:
+            continue
+        first_empty_index = filesystem.index(empty)
+        last_non_empty_index = (
+            len(filesystem) - 1 - filesystem[::-1].index(non_empty_filesystem.pop(-1))
+        )
+
+        if last_non_empty_index <= first_empty_index:
             break
-        filesystem[last_non_empty_item].remove(last_non_empty_space)
-        filesystem[last_non_empty_item].append(empty_space)
-        filesystem[dot].remove(empty_space)
+
+        filesystem[first_empty_index], filesystem[last_non_empty_index] = (
+            filesystem[last_non_empty_index],
+            filesystem[first_empty_index],
+        )
 
     return get_checksum(filesystem=filesystem)
 
@@ -73,54 +114,48 @@ def get_empty_chunks(empty_indexes: List[int]) -> List[List[int]]:
 
 
 def move_files(file_name: str) -> int:
-    filesystem = parse_file_system(file_name=file_name)
-    empty_chunks = get_empty_chunks(empty_indexes=filesystem[dot])
+    filesystem, file_lengths = compact_parse(file_name=file_name)
 
-    for file in sorted(filesystem.keys(), reverse=True):
-        if file == dot:
-            continue
-
+    for file, file_length in sorted(file_lengths.items(), reverse=True):
+        empty_chunks = [
+            {"index": index, "dimension": empty_chunk_dimension}
+            for index, empty_chunk_dimension in enumerate(filesystem)
+            if empty_chunk_dimension < 0
+        ]
+        next_spots = sorted(
+            filter(lambda chunk: abs(chunk["dimension"]) >= file_length, empty_chunks),
+            key=lambda chunk: chunk["index"],
+        )
         print(file)
-        file_length = len(filesystem[file])
-
-        def find_empty_chunk(empty_spaces: List[int], file_len: int) -> List[int]:
-            result: List[int] = [empty_spaces[0]]
-            for empty_space in empty_spaces[1:]:
-                if result[-1] - empty_space and len(result) < file_len:
-                    result.clear()
-                    continue
-                result.append(empty_space)
-
-            return result
-
-        if (
-            empty_chunk_index := find_empty_chunk(
-                empty_spaces=filesystem[dot], file_len=file_length
-            )
-        ) == []:
-            print("File", file, "couldn't be moved")
+        if len(next_spots) == 0:
             continue
-
-        filesystem[file].clear()
-        filesystem[file].extend(
-            (empty_chunk := empty_chunks[empty_chunk_index])[:file_length]
+        free_spot = next_spots[0]
+        free_spot_index, free_spot_dimension = (
+            free_spot["index"],
+            free_spot["dimension"],
         )
-        del empty_chunks[empty_chunk_index]
-        if (to_append := empty_chunk[file_length:]) != []:
-            empty_chunks.append(to_append)
-        empty_chunks = get_empty_chunks(
-            empty_indexes=sorted([index for chunk in empty_chunks for index in chunk])
-        )
-        empty_chunks.sort(key=lambda chunk: chunk[0])
+        if free_spot_index > filesystem.index(file):
+            continue
+        file_index = filesystem.index(file)
 
-    return get_checksum(filesystem=filesystem)
+        if free_spot_dimension + file_length == 0:
+            filesystem[free_spot_index], filesystem[file_index] = (
+                filesystem[file_index],
+                filesystem[free_spot_index],
+            )
+        else:
+            filesystem[free_spot_index] = free_spot_dimension + file_length
+            filesystem[file_index] = -file_length
+            filesystem.insert(free_spot_index, file)
+
+    return get_checksum_compact(filesystem=filesystem, file_lengths=file_lengths)
 
 
 def main() -> None:
     file_name: str = "input/day9/input.txt"
 
-    part_one = fill_empty_spaces(file_name=file_name)
-    print("Part one solution is:", part_one)
+    # part_one = fill_empty_spaces(file_name=file_name)
+    # print("Part one solution is:", part_one)
 
     part_two = move_files(file_name=file_name)
     print("Part two solution is:", part_two)
