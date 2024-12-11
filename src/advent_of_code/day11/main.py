@@ -29,16 +29,12 @@ def execute_cycles(file_name: str, cycles: int) -> int:
     stones: DefaultDict[int, int] = get_input(file_name=file_name)
     for _ in range(cycles):
         updated_stones: Dict[int, int] = defaultdict(int)
-        for stone_value in list(stones):
-            if stones[stone_value] == 0:
-                continue
+        for stone_value in [stone for stone, amount in stones.items() if amount != 0]:
             for new_stone_value in blink(stone_value=stone_value):
                 updated_stones[new_stone_value] += stones[stone_value]
             stones[stone_value] -= stones[stone_value]
         for key, value in updated_stones.items():
-            new_value = stones.get(key, 0)
-            new_value += value
-            stones[key] = new_value
+            stones[key] += value
     return get_total_stones(stones=stones)
 
 
