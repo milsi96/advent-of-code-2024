@@ -1,4 +1,5 @@
-from typing import Callable, List, Tuple
+from functools import partial
+from typing import Callable, List, Tuple, Union
 
 import numpy as np
 from advent_of_code.utils.file_utils import process_file
@@ -56,10 +57,11 @@ def solve(
     convert_prize: Callable[[Coordinate], Coordinate],
     is_solution_valid: Callable[[float], bool],
 ) -> int:
-    claw_machines = get_input(file_name=file_name)
-
-    total_tokens: int = 0
-    for claw_machine in claw_machines:
+    def solve_system(
+        convert_prize: Callable[[Coordinate], Coordinate],
+        is_solution_valid: Callable[[float], bool],
+        claw_machine: Tuple[Button, Button, Coordinate],
+    ) -> Union[int, None]:
         button_a, button_b, prize = claw_machine
         converted_prize = convert_prize(prize)
 
@@ -68,7 +70,7 @@ def solve(
             [converted_prize.x, converted_prize.y],
         )
         if not all(is_solution_valid(sol) for sol in solutions):
-            continue
+            return None
 
         int_solutions = list(map(lambda sol: sol.astype(int), np.round(solutions)))
 
@@ -79,15 +81,21 @@ def solve(
             button_a.dy * int_solutions[0] + button_b.dy * int_solutions[1]
             != converted_prize.y
         ):
-            # to check wether solutions are actually solver of the equations:
-            # it may happen that the solutions have decimal parts which is not okay for the puzzle
-            continue
+            # to check wether solutions actually solve the equations:
+            # it may happen that the solutions have decimal parts which is not admissable
+            return None
 
-        total_tokens += (
-            int_solutions[0] * BUTTON_A_TOKENS + int_solutions[1] * BUTTON_B_TOKENS
+        return int_solutions[0] * BUTTON_A_TOKENS + int_solutions[1] * BUTTON_B_TOKENS
+
+    claw_machines = get_input(file_name=file_name)
+    solve_system_partial = partial(solve_system, convert_prize, is_solution_valid)
+
+    return sum(
+        filter(
+            lambda result: result is not None,
+            map(lambda cm: solve_system_partial(cm), claw_machines),
         )
-
-    return total_tokens
+    )
 
 
 def solve_part_one(file_name: str) -> int:
