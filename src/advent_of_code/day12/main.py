@@ -1,12 +1,15 @@
 from collections import defaultdict
-from itertools import product
-from typing import DefaultDict, Dict, List, Tuple, TypeAlias
+from itertools import groupby, product
+from typing import Callable, DefaultDict, Dict, List, Tuple, TypeAlias
+
+from shapely import Point, Polygon, unary_union
 from advent_of_code.utils.file_utils import process_file
 
 
 Square: TypeAlias = Tuple[int, int]
 ROW: int = 0
 COLUMN: int = 1
+SIDES: int = 4
 
 
 def get_regions(file_name: str) -> DefaultDict[str, List[Square]]:
@@ -67,28 +70,79 @@ def get_perimeter(squares: List[Square]) -> int:
         adjacent_squares = sum(
             adj_square in squares for adj_square in get_adjacent_squares(square=square)
         )
-        perimeter += 4 - adjacent_squares
+        perimeter += SIDES - adjacent_squares
 
     return perimeter
+
+
+def count_edges(coordinates: List[Tuple[float, float]]):
+    def direction(p1, p2):
+        return (p2[0] - p1[0], p2[1] - p1[1])
+
+    if len(coordinates) < 3:
+        return 0
+
+    directions = [
+        direction(coordinates[i - 1], coordinates[i])
+        for i in range(1, len(coordinates))
+    ]
+    edges = len((unique_directions := [dir[0] for dir in groupby(directions)]))
+
+    if unique_directions[0] == unique_directions[-1]:
+        # it may happen that coordinates don't start from an edge
+        edges -= 1
+
+    return edges
+
+
+def get_sides(squares: List[Square]) -> int:
+    polygons = [
+        Polygon(list(point.buffer(0.5, cap_style="square").exterior.coords))
+        for point in list(map(Point, squares))
+    ]
+    merged_polygon = unary_union(polygons)
+    return count_edges(
+        [coord for coord in list(iter(merged_polygon.exterior.coords))]
+    ) + sum(
+        [
+            count_edges(list(iter(interior.coords)))
+            for interior in merged_polygon.interiors
+        ]
+    )
 
 
 def get_area(squares: List[Square]) -> int:
     return len(squares)
 
 
-def get_total_price(file_name: str) -> int:
+def get_total_price(
+    regions: Dict[str, List[Square]],
+    first_value_getter: Callable[[List[Square]], int],
+    second_value_getter: Callable[[List[Square]], int],
+) -> int:
     return sum(
-        get_perimeter(squares=sub_region) * get_area(squares=sub_region)
-        for _, squares in get_regions(file_name=file_name).items()
+        first_value_getter(sub_region) * second_value_getter(sub_region)
+        for _, squares in regions.items()
         for sub_region in groupby_adjacent_regions(squares=squares)
     )
+
+
+def solve_part_one(file_name: str) -> int:
+    return get_total_price(get_regions(file_name=file_name), get_perimeter, get_area)
+
+
+def solve_part_two(file_name: str) -> int:
+    return get_total_price(get_regions(file_name=file_name), get_area, get_sides)
 
 
 def main() -> None:
     file_name: str = "input/day12/input.txt"
 
-    part_one = get_total_price(file_name=file_name)
+    part_one = solve_part_one(file_name=file_name)
     print("Part one solution is", part_one)
+
+    part_two = solve_part_two(file_name=file_name)
+    print("Part two solution is", part_two)
 
 
 if __name__ == "__main__":

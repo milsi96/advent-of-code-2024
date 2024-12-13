@@ -43,6 +43,7 @@ dependencies = [
   "pre-commit",
   "types-shapely",
   "cachetools",
+  "matplotlib",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
