@@ -100,9 +100,9 @@ def solve_part_two(file_name: str, height: int, width: int) -> int:
         )
         distinct_coordinates = set(new_coordinates)
         if len(distinct_coordinates) == len(new_coordinates):
-            visual_representation(
-                coordinates=new_coordinates, height=height, width=width
-            )
+            # visual_representation(
+            #     coordinates=new_coordinates, height=height, width=width
+            # )
             break
         i += 1
     return i
