@@ -51,9 +51,9 @@ def test_get_sides(file_name: str, expected_sides: Tuple[str, int]) -> None:
     assert len((regions := get_regions(file_name=file_name)).keys()) == len(
         expected_sides
     )
-    for region, side in expected_sides:
-        assert region in regions.keys()
-        assert side == get_sides(regions[region])
+    for region, side in expected_sides:  # type: ignore
+        assert region in regions.keys()  # type: ignore
+        assert side == get_sides(regions[region])  # type: ignore
 
 
 @pytest.mark.parametrize(

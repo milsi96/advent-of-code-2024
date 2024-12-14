@@ -92,7 +92,7 @@ def solve(
 
     return sum(
         filter(
-            lambda result: result is not None,
+            lambda result: result is not None,  # type: ignore
             map(lambda cm: solve_system_partial(cm), claw_machines),
         )
     )

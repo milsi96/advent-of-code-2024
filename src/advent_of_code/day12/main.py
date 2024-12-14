@@ -102,11 +102,11 @@ def get_sides(squares: List[Square]) -> int:
     ]
     merged_polygon = unary_union(polygons)
     return count_edges(
-        [coord for coord in list(iter(merged_polygon.exterior.coords))]
+        [coord for coord in list(iter(merged_polygon.exterior.coords))]  # type: ignore
     ) + sum(
         [
             count_edges(list(iter(interior.coords)))
-            for interior in merged_polygon.interiors
+            for interior in merged_polygon.interiors  # type: ignore
         ]
     )
 
