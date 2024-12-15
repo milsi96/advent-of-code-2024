@@ -84,23 +84,7 @@ def get_robot(items: Dict[Coordinate, Item]) -> Coordinate:
 def apply_move(
     item_stack: List[Coordinate], items: Dict[Coordinate, Item], move: Move
 ) -> List[Coordinate]:
-    # x_coords, y_coords = list(map(lambda item: item[X], item_stack)), list(map(lambda item: item[Y], item_stack))
-
-    # min_x, max_x = min(x_coords), max(x_coords)
-    # min_y, max_y = min(y_coords), max(y_coords)
     direction = move.get_direction()
-
-    # target_items: List[Coordinate] = list()
-
-    # match move:
-    #     case Move.UP:
-    #         target_items = list(filter(lambda i: i[X] == min_x, item_stack))
-    #     case Move.DOWN:
-    #         target_items = list(filter(lambda i: i[X] == max_x, item_stack))
-    #     case Move.LEFT:
-    #         target_items = list(filter(lambda i: i[Y] == min_y, item_stack))
-    #     case Move.RIGHT:
-    #         target_items = list(filter(lambda i: i[Y] == max_y, item_stack))
 
     if all(
         (next_coord := (item[X] + direction[X], item[Y] + direction[Y]))
@@ -113,11 +97,6 @@ def apply_move(
         )
     else:
         return item_stack
-
-    # if all((next_coord := (item[X]+direction[X], item[Y]+direction[Y])) not in items.keys() and next_coord is not Item.WALL for item in target_items):
-    #     return list(map(lambda c: (c[X]+direction[X], c[Y]+direction[Y]), item_stack))
-    # else:
-    #     return item_stack
 
 
 def get_stack(
