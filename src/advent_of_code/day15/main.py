@@ -183,7 +183,7 @@ def solve_part_two(file_name: str) -> int:
         for item, new_coord in zip(stack_items, updated_coordinates):
             items[new_coord] = item
 
-        # uncomment this sleep to see the robot move boxes
+        # uncomment this to see the robot move boxes
         # print_warehouse(items=items, resized=True)
         # print()
         # time.sleep(0.3)
