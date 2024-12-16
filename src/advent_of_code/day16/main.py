@@ -225,12 +225,9 @@ def dijkstra(
     path = []
     if end in visited:
         current = end
-        while True:
+        while current in predecessor.keys():
             path.append(current)
-            if current in predecessor.keys():
-                current = predecessor[current]
-            else:
-                break
+            current = predecessor[current]
 
         path.reverse()
 
