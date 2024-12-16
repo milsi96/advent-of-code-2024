@@ -1,7 +1,6 @@
 from enum import StrEnum
 from functools import partial
 import sys
-import time
 from typing import List, Tuple, TypeAlias
 
 from advent_of_code.utils.file_utils import process_file
@@ -15,6 +14,8 @@ Direction: TypeAlias = Tuple[int, int]
 
 ROW = 0
 COLUMN = 1
+
+sys.setrecursionlimit(10**6)
 
 
 class Move(StrEnum):
@@ -55,6 +56,7 @@ def get_maze(file_name: str) -> Tuple[Start, End, List[Point]]:
                 points.append((row, column))
                 start = (row, column)
             elif lines[row][column] == "E":
+                points.append((row, column))
                 end = (row, column)
 
     return start, end, points
@@ -69,15 +71,14 @@ def print_maze(
     for i in range(height):
         line = ""
         for j in range(width):
-            coord = (i, j)
-            if coord == reindeer:
+            if (coord := (i, j)) == reindeer:
                 line += "S"
             elif coord == target:
                 line += "E"
             elif coord not in points:
-                line += "#"
+                line += " "
             elif coord in path:
-                line += "°"
+                line += "*"
             else:
                 line += "."
         print(line)
@@ -93,57 +94,90 @@ def get_next_moves(points: List[Point], current_position: Point) -> List[Move]:
     )
 
 
-def find_best_path(points: List[Point], start: Start, end: End) -> int:
-    def depth_first_search(
-        target: Point, points: List[Point], current_point: Point, path: List[Point]
-    ) -> int:
-        print(path)
-        print_maze(points=points, reindeer=current_point, target=end, path=path)
-        print()
+def get_direction(p1: Point, p2: Point) -> Direction:
+    return (p2[0] - p1[0], p2[1] - p1[1])
 
-        if current_point == target:
-            return 0
 
-        new_points = list(
-            filter(
-                lambda point: point not in path,
-                map(
-                    lambda move: apply_direction(
-                        point=current_point, direction=move.get_direction()
-                    ),
-                    get_next_moves(points=points, current_position=current_point),
+best_score: int = sys.maxsize
+
+
+def depth_first_search(
+    target: Point,
+    points: List[Point],
+    current_point: Point,
+    path: List[Point],
+    score: int,
+    depth: int,
+) -> int:
+    # print_maze(points=points, reindeer=current_point, target=target, path=path)
+    # print()
+    # time.sleep(0.1)
+
+    print("Depth: ", depth)
+
+    global best_score
+
+    if score >= best_score:
+        return sys.maxsize
+
+    if current_point == target:
+        # comparing the first two elements to recognize if the reindeer rotated as first move
+        best_score = min(
+            (
+                final_score := score
+                + (0 if get_direction(path[0], path[1]) == (0, 1) else 1000)
+            ),
+            best_score,
+        )
+        print("Current best score:", best_score)
+        return final_score
+
+    new_points = list(
+        filter(
+            lambda point: point not in path,
+            map(
+                lambda move: apply_direction(
+                    point=current_point, direction=move.get_direction()
                 ),
+                get_next_moves(points=points, current_position=current_point),
+            ),
+        )
+    )
+    if len(new_points) == 0:
+        return sys.maxsize
+
+    def get_priority(path: List[Point], point: Point) -> int:
+        if len(path) <= 2:
+            return 1
+        return (
+            1
+            if get_direction(p1=point, p2=path[-1])
+            == get_direction(p1=path[-1], p2=path[-2])
+            else 1001
+        )
+
+    priority = partial(get_priority, path)
+    return min(
+        [
+            depth_first_search(
+                target=target,
+                points=points,
+                current_point=point,
+                path=(path.copy() + [point]),
+                score=score + priority(point),
+                depth=depth + 1,
             )
-        )
-        if len(new_points) == 0:
-            return sys.maxsize
-
-        time.sleep(0.5)
-
-        return min(
-            [
-                1
-                + depth_first_search(
-                    target=target,
-                    points=points,
-                    current_point=point,
-                    path=(path.copy() + [point]),
-                )
-                for point in new_points
-            ]
-        )
-
-    return depth_first_search(
-        target=end, points=points, current_point=start, path=[start]
+            for point in sorted(new_points, key=priority)
+        ]
     )
 
 
 def solve_part_one(file_name: str) -> int:
     start, end, points = get_maze(file_name=file_name)
 
-    find_best_path(points=points, start=start, end=end)
-
-    return 0
+    return depth_first_search(
+        target=end, points=points, current_point=start, path=[start], score=0, depth=0
+    )
 
 
 def main() -> None:
