@@ -237,19 +237,22 @@ def dijkstra(
 def solve_part_one(file_name: str) -> int:
     start, end, points = get_maze(file_name=file_name)
     distances, path = dijkstra(maze=points, start=start, end=end)
-
-    # print_maze(points=points, reindeer=start, target=end, path=path)
-
     return distances[end] + (0 if get_direction(path[0], path[1]) == (0, 1) else 1000)
 
 
 def solve_part_two(file_name: str) -> int:
-    # start, end, points = get_maze(file_name=file_name)
-    # target_points = solve_part_one(file_name=file_name)
+    start, end, points = get_maze(file_name=file_name)
+    target_points = solve_part_one(file_name=file_name)
 
-    # distinct_points = depth_first_search(target=end, points=points, current_point=start, path=[start], score=0, best_score=target_points)
-    # print_maze(points=points, reindeer=start, target=end, path=list(distinct_points))
-    return 0
+    distinct_points = depth_first_search(
+        target=end,
+        points=points,
+        current_point=start,
+        path=[start],
+        score=0,
+        best_score=target_points,
+    )
+    return len(distinct_points)
 
 
 def main() -> None:
