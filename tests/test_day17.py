@@ -1,14 +1,14 @@
 from typing import Dict, List
 import pytest
 
-from advent_of_code.day17.main import A, B, C, get_input, run_program
+from advent_of_code.day17.main import A, B, C, solve_part_one, run_program
 
 
 @pytest.mark.parametrize(
     "file_name, expected", [("input/day17/example.txt", "4,6,3,5,6,3,5,2,1,0")]
 )
 def test_solve_part_one(file_name: str, expected: str) -> None:
-    assert run_program(*get_input(file_name=file_name)) == expected
+    assert solve_part_one(file_name=file_name) == expected
 
 
 @pytest.mark.parametrize(

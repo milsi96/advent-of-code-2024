@@ -98,10 +98,14 @@ def run_program(registers: Dict[str, int], program: List[int]) -> str:
     return ",".join(list(map(str, out)))
 
 
+def solve_part_one(file_name: str) -> str:
+    return run_program(*get_input(file_name=file_name))
+
+
 def main() -> None:
     file_name: str = "input/day17/input.txt"
 
-    out = run_program(*get_input(file_name=file_name))
+    out = solve_part_one(file_name=file_name)
     print("Part one solution is", out)
 
 
