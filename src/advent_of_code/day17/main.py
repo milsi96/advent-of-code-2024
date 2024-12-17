@@ -1,6 +1,6 @@
 from functools import partial
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, Generator, List, Tuple
 
 from advent_of_code.utils.file_utils import process_file
 
@@ -55,16 +55,15 @@ def get_combo_operand(registers: Dict[str, int], operand: int) -> int:
         raise ValueError("7 is not supported")
 
 
-def run_program(registers: Dict[str, int], program: List[int]) -> str:
-    modulo_8 = partial(modulo, 8)
-    out: List[int] = list()
+def run_program(
+    registers: Dict[str, int], program: List[int]
+) -> Generator[int, None, None]:
+    modulo_8, combo_operand = partial(modulo, 8), partial(get_combo_operand, registers)
     instruction_pointer: int = 0
 
     while True:
         instruction = program[instruction_pointer]
         operand = program[instruction_pointer + 1]
-        combo_operand = partial(get_combo_operand, registers)
-
         match instruction:
             case 0:
                 registers[A] = division(
@@ -81,7 +80,7 @@ def run_program(registers: Dict[str, int], program: List[int]) -> str:
             case 4:
                 registers[B] = bitwise_xor(op1=registers[B], op2=registers[C])
             case 5:
-                out.append(modulo_8(op=combo_operand(operand)))
+                yield modulo_8(op=combo_operand(operand))
             case 6:
                 registers[B] = division(
                     numerator=registers[A], denominator=pow(2, combo_operand(operand))
@@ -95,11 +94,27 @@ def run_program(registers: Dict[str, int], program: List[int]) -> str:
         if instruction_pointer > len(program) - 1:
             break
 
-    return ",".join(list(map(str, out)))
+
+def solve_part_two(file_name: str) -> int:
+    registers, program = get_input(file_name=file_name)
+    tryout: int = 0
+
+    while True:
+        registers[A] = tryout
+        program_index = 0
+        acc: List[int] = list()
+        for out in run_program(registers=registers, program=program):
+            if out != program[program_index] or program_index > len(program):
+                break
+            acc.append(out)
+            program_index += 1
+        if acc == program:
+            return tryout
+        tryout += 1
 
 
 def solve_part_one(file_name: str) -> str:
-    return run_program(*get_input(file_name=file_name))
+    return ",".join(list(map(str, run_program(*get_input(file_name=file_name)))))
 
 
 def main() -> None:
@@ -107,6 +122,10 @@ def main() -> None:
 
     out = solve_part_one(file_name=file_name)
     print("Part one solution is", out)
+
+    # This does not work with the actual input
+    # target_a_value = solve_part_two(file_name=file_name)
+    # print("Part two solution is", target_a_value)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,14 @@
 from typing import Dict, List
 import pytest
 
-from advent_of_code.day17.main import A, B, C, solve_part_one, run_program
+from advent_of_code.day17.main import (
+    A,
+    B,
+    C,
+    solve_part_one,
+    run_program,
+    solve_part_two,
+)
 
 
 @pytest.mark.parametrize(
@@ -28,5 +35,12 @@ def test_solve_part_one(file_name: str, expected: str) -> None:
 def test_run_program(
     registers: Dict[str, int], program: List[int], condition: str
 ) -> None:
-    out = run_program(registers=registers, program=program)  # noqa: F841
+    out = ",".join(  # noqa: F841
+        list(map(str, run_program(registers=registers, program=program)))
+    )
     assert eval(condition)
+
+
+@pytest.mark.parametrize("file_name, expected", [("input/day17/example2.txt", 117440)])
+def test_solve_part_two(file_name: str, expected: int) -> None:
+    assert solve_part_two(file_name=file_name) == expected
