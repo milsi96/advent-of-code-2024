@@ -87,12 +87,12 @@ def get_maze(
     return maze, (0, 0), (height, width)
 
 
-def get_obstacles(file_name: str, limit: int) -> List[Point]:
+def get_obstacles(file_name: str) -> List[Point]:
     lines: List[List[int]] = process_file(
         file_name=file_name,
         process=lambda line: list(map(int, line.replace("\n", "").split(","))),
     )
-    return list(map(lambda line: (line[COLUMN], line[ROW]), lines[:limit]))
+    return list(map(lambda line: (line[COLUMN], line[ROW]), lines))
 
 
 def print_maze(
@@ -119,7 +119,7 @@ def print_maze(
 
 def solve_part_one(file_name: str, height: int, width: int, limit: int) -> int:
     maze, start, end = get_maze(
-        obstacles=get_obstacles(file_name=file_name, limit=limit),
+        obstacles=get_obstacles(file_name=file_name)[:limit],
         height=height,
         width=width,
     )
@@ -128,8 +128,26 @@ def solve_part_one(file_name: str, height: int, width: int, limit: int) -> int:
     return distances[end]
 
 
-def solve_part_two(file_name: str, height: int, width: int, limit: int) -> int:
-    return 0
+def solve_part_two(file_name: str, height: int, width: int, limit: int) -> Point:
+    last_bit: Point
+    obstacles = get_obstacles(file_name=file_name)
+    test_limit: int = len(obstacles) - 1
+
+    while True:
+        maze, start, end = get_maze(
+            obstacles=obstacles[:test_limit],
+            height=height,
+            width=width,
+        )
+        distances, _ = dijkstra(maze=maze, start=start, end=end)
+
+        if distances[end] != sys.maxsize:
+            last_bit = obstacles[test_limit]
+            break
+
+        test_limit -= 1
+
+    return (last_bit[COLUMN], last_bit[ROW])
 
 
 def main() -> None:
@@ -137,6 +155,9 @@ def main() -> None:
 
     part_one = solve_part_one(file_name=file_name, height=70, width=70, limit=1024)
     print("Part one solution is", part_one)
+
+    part_two = solve_part_two(file_name=file_name, height=70, width=70, limit=1024)
+    print("Part two solution is", part_two)
 
 
 if __name__ == "__main__":
