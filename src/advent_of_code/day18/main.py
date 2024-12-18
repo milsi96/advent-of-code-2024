@@ -95,28 +95,6 @@ def get_obstacles(file_name: str) -> List[Point]:
     return list(map(lambda line: (line[COLUMN], line[ROW]), lines))
 
 
-def print_maze(
-    points: List[Point], reindeer: Point, target: Point, path: List[Point]
-) -> None:
-    height = max(map(lambda p: p[ROW], points)) + 1
-    width = max(map(lambda point: point[COLUMN], points)) + 1
-
-    for i in range(height):
-        line = ""
-        for j in range(width):
-            if (coord := (i, j)) == reindeer:
-                line += "S"
-            elif coord == target:
-                line += "E"
-            elif coord not in points:
-                line += "#"
-            elif coord in path:
-                line += "O"
-            else:
-                line += "."
-        print(line)
-
-
 def solve_part_one(file_name: str, height: int, width: int, limit: int) -> int:
     maze, start, end = get_maze(
         obstacles=get_obstacles(file_name=file_name)[:limit],
