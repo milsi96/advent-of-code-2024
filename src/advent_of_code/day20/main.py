@@ -29,19 +29,16 @@ def get_track(file_name: str) -> Tuple[List[Point], Point, Point]:
 
 
 def get_cheats_for_track(
-    original_track: List[Point], max_cheat_time: int
+    original_track: List[Point],
 ) -> Generator[Tuple[Point, Point, Point], None, None]:
     def get_mid_point(p1: Point, p2: Point) -> Point:
-        return (
-            (p1[ROW] + p2[ROW]) // max_cheat_time,
-            (p1[COLUMN] + p2[COLUMN]) // max_cheat_time,
-        )
+        return ((p1[ROW] + p2[ROW]) // 2, (p1[COLUMN] + p2[COLUMN]) // 2)
 
     def get_end_cheat(
         track: List[Point], target: Point
     ) -> Generator[Tuple[Point, Point], None, None]:
         for point in track:
-            if get_manhattan_distance(target, point) != max_cheat_time:
+            if get_manhattan_distance(target, point) != 2:
                 continue
             if (wall := get_mid_point(target, point)) in track:
                 continue
@@ -57,19 +54,13 @@ def get_cheats_for_track(
                 yield point, wall, end_cheat
 
 
-def solve_part_one(
-    file_name: str, max_cheat_time: int = 2, picoseconds_limit: int = 0
-) -> int:
+def solve_part_one(file_name: str, picoseconds_limit: int = 0) -> int:
     points, start, end = get_track(file_name=file_name)
     distances, path = dijkstra(maze=list(points), start=start, end=end)
     result = 0
 
-    for start_cheat, _, end_cheat in get_cheats_for_track(
-        original_track=path, max_cheat_time=max_cheat_time
-    ):
-        saved_picoseconds = distances[end_cheat] - (
-            distances[start_cheat] + max_cheat_time
-        )
+    for start_cheat, _, end_cheat in get_cheats_for_track(original_track=path):
+        saved_picoseconds = distances[end_cheat] - (distances[start_cheat] + 2)
         if saved_picoseconds != 0 and saved_picoseconds >= picoseconds_limit:
             result += 1
 
