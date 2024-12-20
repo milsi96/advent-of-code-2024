@@ -93,15 +93,17 @@ def get_total_cheats(
 
 
 def main() -> None:
-    file_name = "input/day20/example.txt"
+    file_name = "input/day20/input.txt"
+    limit = 100
+    distance = 2
 
     part_one = get_total_cheats(
-        file_name=file_name, picoseconds_limit=0, max_distance=2
+        file_name=file_name, picoseconds_limit=limit, max_distance=distance
     )
     print("Part one solution is", part_one)
 
     part_two = get_total_cheats(
-        file_name=file_name, picoseconds_limit=100, max_distance=20
+        file_name=file_name, picoseconds_limit=limit, max_distance=distance * 10
     )
     print("Part two solution is", part_two)
 
