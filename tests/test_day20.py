@@ -10,9 +10,5 @@ from advent_of_code.day20.main import get_total_cheats
 def test_solve_part_one(
     file_name: str, max_distance: int, limit: int, expected: int
 ) -> None:
-    assert (
-        get_total_cheats(
-            file_name=file_name, max_distance=max_distance, picoseconds_limit=limit
-        )
-        == expected
-    )
+    total_cheats = get_total_cheats(file_name, max_distance, limit)
+    assert total_cheats == expected
