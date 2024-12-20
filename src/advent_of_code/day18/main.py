@@ -68,7 +68,7 @@ def dijkstra(
         while current in predecessor.keys():
             path.append(current)
             current = predecessor[current]
-
+        path.append(start)
         path.reverse()
 
     return distances, path

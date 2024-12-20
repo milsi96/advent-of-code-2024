@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from functools import partial
 from typing import List, Set, Tuple, TypeAlias
 
-from cachetools import TTLCache, cached
+from cachetools import TTLCache, cached  # type: ignore
 
 from advent_of_code.utils.file_utils import process_file
 
