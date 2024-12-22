@@ -43,6 +43,11 @@ def get_next_secret_at(secret: int, at: int) -> int:
     return result
 
 
+def get_buyer_sequence(secret: int, rounds: int) -> List[int]:
+    next_secret_at = partial(get_next_secret_at, secret)
+    return list(map(next_secret_at, range(1, rounds + 1)))
+
+
 def solve_part_one(file_name: str, rounds: int) -> int:
     numbers = [[number, rounds] for number in get_numbers(file_name=file_name)]
     return sum(starmap(get_next_secret_at, numbers))
