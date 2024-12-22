@@ -66,13 +66,12 @@ def get_differences(sequence: List[int]) -> Tuple[int, ...]:
 
 def get_changes(rounds: int, buyer: int) -> Dict[Tuple[int, ...], int]:
     current_round: int = 0
+    batch_size = 5
     result: Dict[Tuple[int, ...], int] = dict()
     secret = buyer
 
-    print("Getting changes for buyer", buyer)
-
-    while current_round <= rounds:
-        sequence = get_buyer_sequence(5, secret)
+    while current_round <= rounds - batch_size + 1:
+        sequence = get_buyer_sequence(batch_size, secret)
         differences = get_differences(sequence)
 
         if differences not in result.keys():
@@ -93,7 +92,8 @@ def solve_part_two(file_name: str, rounds: int) -> int:
         for sequence, price in changes.items():
             total_prices[sequence] += price
 
-    return max(total_prices.values())
+    result = sorted(total_prices.items(), key=lambda item: item[1], reverse=True)
+    return result[0][1]
 
 
 def main() -> None:
