@@ -1,6 +1,6 @@
 from functools import partial
 from itertools import combinations
-import networkx as nx
+import networkx as nx  # type: ignore
 
 from networkx import Graph
 
@@ -24,7 +24,7 @@ def get_graph(file_name: str) -> Graph:
 def solve_part_two(file_name: str) -> str:
     graph = get_graph(file_name=file_name)
 
-    return ",".join(sorted(max(nx.find_cliques(G=graph), key=len)))
+    return ",".join(sorted(max(nx.find_cliques(G=graph), key=len)))  # type: ignore
 
 
 def solve_part_one(file_name: str) -> int:
