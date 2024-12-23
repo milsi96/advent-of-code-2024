@@ -44,6 +44,7 @@ dependencies = [
   "types-shapely",
   "cachetools",
   "matplotlib",
+  "networkx",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

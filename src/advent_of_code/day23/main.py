@@ -1,67 +1,65 @@
-from collections import defaultdict
 from functools import partial
 from itertools import combinations
-from typing import DefaultDict, Generator, List, Set, Tuple, TypeAlias
+import networkx as nx
+
+from networkx import Graph
 
 from advent_of_code.utils.file_utils import process_file
 
 
-ComputerTriple: TypeAlias = Tuple[str, str, str]
-
-
-def get_connections(file_name: str) -> DefaultDict[str, List[str]]:
+def get_graph(file_name: str) -> Graph:
     tuples = process_file(
         file_name=file_name,
         process=lambda line: ((pcs := line.replace("\n", "").split("-"))[0], pcs[1]),
     )
-    connections: DefaultDict[str, List[str]] = defaultdict(list)
-    for tup in tuples:
-        computer, link = tup
-        connections[computer].append(link)
-        connections[link].append(computer)
 
-    return connections
+    graph = nx.Graph()
+    for computer, link in tuples:
+        graph.add_node(computer)
+        graph.add_edge(computer, link)
 
-
-def get_possible_combination(
-    connections: DefaultDict[str, List[str]],
-) -> Generator[ComputerTriple, None, None]:
-    for combination in combinations(connections.keys(), 3):
-        yield combination
+    return graph
 
 
-def is_combination_valid(
-    connections: DefaultDict[str, List[str]], combination: ComputerTriple
-) -> bool:
-    first, second, third = combination
+def solve_part_two(file_name: str) -> str:
+    graph = get_graph(file_name=file_name)
 
-    if all(el in connections.get(first, list()) for el in [second, third]):
-        if all(el in connections.get(second, list()) for el in [first, third]):
-            if all(el in connections.get(third, list()) for el in [first, second]):
-                return True
-
-    return False
+    return ",".join(sorted(max(nx.find_cliques(G=graph), key=len)))
 
 
-def solve_part_one(file_name: str, letter_filter: str) -> int:
-    connections = get_connections(file_name=file_name)
-    triples: Set[ComputerTriple] = set()
-    is_valid = partial(is_combination_valid, connections)
+def solve_part_one(file_name: str) -> int:
+    graph = get_graph(file_name=file_name)
 
-    for combination in get_possible_combination(connections=connections):
-        if is_valid(combination=combination) and any(
-            [el[0] == letter_filter for el in [*combination]]
-        ):
-            triples.add(combination)
+    def startswith(letter: str, word: str) -> bool:
+        return word.startswith(letter)
 
-    return len(triples)
+    startswith_t = partial(startswith, "t")
+
+    triples = set(
+        map(
+            lambda triple: tuple(sorted(triple)),
+            [
+                triple
+                for clique in nx.find_cliques(G=graph)
+                for triple in combinations(clique, 3)
+            ],
+        )
+    )
+    triples_with_t = list(
+        filter(lambda triple: any(startswith_t(c) for c in triple), triples)
+    )
+
+    return len(triples_with_t)
 
 
 def main() -> None:
     file_name: str = "input/day23/input.txt"
 
-    part_one = solve_part_one(file_name=file_name, letter_filter="t")
+    part_one = solve_part_one(file_name=file_name)
     print("Part one solution is", part_one)
+
+    part_two = solve_part_two(file_name=file_name)
+    print("Part two solution is", part_two)
 
 
 if __name__ == "__main__":
