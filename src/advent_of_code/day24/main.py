@@ -56,7 +56,7 @@ def get_input(file_name: str) -> Tuple[Dict[str, int], List[Connection]]:
     return gates, connections
 
 
-def get_output(gates: Dict[str, int], connections: List[Connection]) -> int:
+def get_output(gates: Dict[str, int], connections: List[Connection]) -> Dict[str, int]:
     processed: List[int] = list()
     while not all(value != -1 for _, value in gates.items()):
         for i in range(len(connections)):
@@ -78,7 +78,7 @@ def get_output(gates: Dict[str, int], connections: List[Connection]) -> int:
                 )
                 gates[connections[i].wire] = int(result)
 
-    return get_number(gates=gates, target="z")
+    return gates
 
 
 def get_number(gates: Dict[str, int], target: str) -> int:
@@ -96,7 +96,8 @@ def get_number(gates: Dict[str, int], target: str) -> int:
 
 def solve_part_one(file_name: str) -> int:
     gates, connections = get_input(file_name=file_name)
-    return get_output(gates=gates, connections=connections)
+    updated_gates = get_output(gates=gates, connections=connections)
+    return get_number(gates=updated_gates, target="z")
 
 
 def main() -> None:
@@ -104,6 +105,8 @@ def main() -> None:
 
     part_one = solve_part_one(file_name=file_name)
     print("Part one solution is", part_one)
+
+    # part two was not completed
 
 
 if __name__ == "__main__":
