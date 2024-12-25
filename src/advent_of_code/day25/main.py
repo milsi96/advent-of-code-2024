@@ -19,25 +19,31 @@ def get_locks_and_keys(file_name: str) -> Tuple[List[Lock], List[Key]]:
         file_name=file_name, process=lambda line: line.replace("\n", "")
     )
 
+    def map_to_lock(batch: List[str]) -> Lock:
+        return [
+            max([row for row in range(len(batch)) if batch[row][column] == "#"])
+            for column in range(len(batch[0]))
+        ]
+
+    def map_to_key(batch: List[str]) -> Key:
+        return [
+            6 - min([row for row in range(len(batch)) if batch[row][column] == "#"])
+            for column in range(len(batch[0]))
+        ]
+
     def predicate(batch: List[str]) -> bool:
         return all(batch[0][column] == "#" for column in range(len(batch[0])))
 
     batches = list(batched(list(filter(lambda line: line != "", lines)), batch_size=7))
     locks = list(
         map(
-            lambda batch: [
-                max([row for row in range(len(batch)) if batch[row][column] == "#"])
-                for column in range(len(batch[0]))
-            ],
+            map_to_lock,
             filter(predicate, batches),
         )
     )
     keys = list(
         map(
-            lambda batch: [
-                6 - min([row for row in range(len(batch)) if batch[row][column] == "#"])
-                for column in range(len(batch[0]))
-            ],
+            map_to_key,
             filterfalse(predicate, batches),
         )
     )
@@ -47,11 +53,15 @@ def get_locks_and_keys(file_name: str) -> Tuple[List[Lock], List[Key]]:
 
 def solve_part_one(file_name: str) -> int:
     locks, keys = get_locks_and_keys(file_name=file_name)
+
+    def height_overlap(zips: List[Tuple[int, int]]) -> bool:
+        return all(n_lock + n_key <= 5 for n_lock, n_key in zips)
+
     return sum(
         list(
             map(
-                lambda zips: all(n_lock + n_key <= 5 for n_lock, n_key in zips),
-                map(lambda item: zip(item[0], item[1]), product(locks, keys)),
+                height_overlap,
+                map(lambda item: list(zip(item[0], item[1])), product(locks, keys)),
             )
         )
     )
