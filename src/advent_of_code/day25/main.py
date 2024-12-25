@@ -55,14 +55,12 @@ def solve_part_one(file_name: str) -> int:
     locks, keys = get_locks_and_keys(file_name=file_name)
 
     def height_overlap(zips: List[Tuple[int, int]]) -> bool:
-        return all(n_lock + n_key <= 5 for n_lock, n_key in zips)
+        return all(lock + key <= 5 for lock, key in zips)
 
     return sum(
-        list(
-            map(
-                height_overlap,
-                map(lambda item: list(zip(item[0], item[1])), product(locks, keys)),
-            )
+        map(
+            height_overlap,
+            map(lambda item: list(zip(item[0], item[1])), product(locks, keys)),
         )
     )
 
